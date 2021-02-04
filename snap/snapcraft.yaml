@@ -1,0 +1,121 @@
+name: lets-nginx-proxy
+base: core20
+version: '0.1' 
+summary: Proxy to localhost with nginx and letsencrypt
+description: |
+  We'll figure this out when we're ready.
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: devmode # use 'strict' once you have the right plugs and slots
+
+apps:
+  lets-encrypt:
+    environment:
+      PYTHONPATH: $SNAP/lib/python3.8/site-packages
+    command: bin/certbot
+    plugs:
+      - network
+      - network-bind
+  nginx:
+    environment:
+      LD_PRELOAD: $SNAP/usr/lib/nginx/ld-preload.so
+    command: usr/sbin/nginx
+    plugs:
+      - network
+      - network-bind
+  nginx-daemon:
+    environment:
+      LD_PRELOAD: $SNAP/usr/lib/nginx/ld-preload.so
+    command: usr/sbin/nginx
+    daemon: forking
+    plugs:
+      - network
+      - network-bind
+
+layout:
+  /etc/letsencrypt:
+    bind: $SNAP_DATA/etc/letsencrypt
+  /var/log/letsencrypt:
+    bind: $SNAP_DATA/var/log/letsencrypt
+  /var/lib/letsencrypt:
+    bind: $SNAP_DATA/var/lib/letsencrypt
+  /var/log/nginx:
+    bind: $SNAP_DATA/var/log/nginx
+  /var/www:
+    bind: $SNAP_DATA/var/www
+  /var/lib/nginx/body:
+    bind: $SNAP_DATA/var/lib/nginx/body
+  /var/lib/nginx/proxy:
+    bind: $SNAP_DATA/var/lib/nginx/proxy
+  /var/lib/nginx/fastcgi:
+    bind: $SNAP_DATA/var/lib/nginx/fastcgi
+  /var/lib/nginx/uwsgi:
+    bind: $SNAP_DATA/var/lib/nginx/uwsgi
+  /var/lib/nginx/scgi:
+    bind: $SNAP_DATA/var/lib/nginx/scgi
+  /etc/nginx/conf.d:
+    bind: $SNAP_DATA/etc/nginx/conf.d
+  /etc/nginx/fastcgi.conf:
+    bind-file: $SNAP/etc/nginx/fastcgi.conf
+  /etc/nginx/fastcgi_params:
+    bind-file: $SNAP/etc/nginx/fastcgi_params
+  /etc/nginx/koi-utf:
+    bind-file: $SNAP/etc/nginx/koi-utf
+  /etc/nginx/koi-win:
+    bind-file: $SNAP/etc/nginx/koi-win
+  /etc/nginx/mime.types:
+    bind-file: $SNAP_DATA/etc/nginx/mime.types
+  /etc/nginx/modules-enabled:
+    bind-file: $SNAP_DATA/etc/nginx/modules-enabled
+  /etc/nginx/nginx.conf:
+    bind-file: $SNAP/etc/nginx/nginx.conf
+  /etc/nginx/proxy_params:
+    bind-file: $SNAP/etc/nginx/proxy_params
+  /etc/nginx/scgi_params:
+    bind-file: $SNAP/etc/nginx/scgi_params
+  /etc/nginx/sites-enabled:
+    bind: $SNAP_DATA/etc/nginx/sites-enabled
+  /etc/nginx/snippets:
+    bind: $SNAP/etc/nginx/snippets
+  /etc/nginx/uwsgi_params:
+    bind-file: $SNAP/etc/nginx/uwsgi_params
+  /etc/nginx/win-utf:
+    bind-file: $SNAP/etc/nginx/win-utf
+  /etc/nginx/.certbot.lock:
+    bind-file: $SNAP_DATA/etc/nginx/.certbot.lock
+
+parts:
+  nginx:
+    plugin: nil
+    stage-packages:
+      - nginx
+    stage-snaps:
+      - certbot
+    override-prime: |
+      snapcraftctl prime
+
+      sed -i "1s#^#env LD_PRELOAD;\n#" ${SNAPCRAFT_PRIME}/etc/nginx/nginx.conf
+      sed -i 's#user.*;#user root;#' ${SNAPCRAFT_PRIME}/etc/nginx/nginx.conf
+      sed -i 's#pid.*;#pid /tmp/nginx.pid;#' ${SNAPCRAFT_PRIME}/etc/nginx/nginx.conf
+    filesets:
+      exclude-conf-folders:
+        - -etc/nginx/sites-enabled
+        - -etc/nginx/conf.d
+        - -var/www
+        - -var/log
+        - -var/lib
+    stage:
+      - $exclude-conf-folders
+  hooks:
+    plugin: dump
+    source: source/hooks
+    organize:
+      '*': snap/hooks/
+  ld-preload:
+    plugin: nil
+    source: source/nginx
+    build-packages:
+      - gcc
+    override-build: |
+      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/lib/nginx
+      gcc -fPIC -shared -o $SNAPCRAFT_PART_INSTALL/usr/lib/nginx/ld-preload.so $SNAPCRAFT_PART_BUILD/ld-preload.c -ldl

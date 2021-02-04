@@ -1,0 +1,9 @@
+#/usr/bin/env bash
+
+set -ex
+
+cp -r $SNAP/etc/nginx/sites-available $SNAP_DATA/etc/nginx
+cp -r $SNAP/etc/nginx/mime.types $SNAP_DATA/etc/nginx
+
+ln -s $SNAP_DATA/etc/nginx/sites-available/default \
+    $SNAP_DATA/etc/nginx/sites-enabled
