@@ -1,7 +1,7 @@
 name: lets-nginx-rproxy
 base: core20
 version: '0.1' 
-summary: Proxy to localhost with Nginx and Let's Encrypt
+summary: Proxy to localhost with Nginx and Lets Encrypt
 description: |
   Simple snap to reverse proxy with Let's encrypt and Nginx.
 
