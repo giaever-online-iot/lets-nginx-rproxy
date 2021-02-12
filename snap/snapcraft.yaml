@@ -1,4 +1,4 @@
-name: lets-nginx-proxy
+name: lets-nginx-rproxy
 base: core20
 version: '0.1' 
 summary: Proxy to localhost with nginx and letsencrypt
