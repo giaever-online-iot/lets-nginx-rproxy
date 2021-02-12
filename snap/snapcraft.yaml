@@ -35,54 +35,18 @@ apps:
 layout:
   /etc/letsencrypt:
     bind: $SNAP_DATA/etc/letsencrypt
+  /etc/nginx:
+    bind: $SNAP_DATA/etc/nginx
+  /var/log/nginx:
+    bind: $SNAP_DATA/var/log/nginx
   /var/log/letsencrypt:
     bind: $SNAP_DATA/var/log/letsencrypt
   /var/lib/letsencrypt:
     bind: $SNAP_DATA/var/lib/letsencrypt
-  /var/log/nginx:
-    bind: $SNAP_DATA/var/log/nginx
+  /var/lib/nginx:
+    bind: $SNAP_DATA/var/lib/nginx
   /var/www:
     bind: $SNAP_DATA/var/www
-  /var/lib/nginx/body:
-    bind: $SNAP_DATA/var/lib/nginx/body
-  /var/lib/nginx/proxy:
-    bind: $SNAP_DATA/var/lib/nginx/proxy
-  /var/lib/nginx/fastcgi:
-    bind: $SNAP_DATA/var/lib/nginx/fastcgi
-  /var/lib/nginx/uwsgi:
-    bind: $SNAP_DATA/var/lib/nginx/uwsgi
-  /var/lib/nginx/scgi:
-    bind: $SNAP_DATA/var/lib/nginx/scgi
-  /etc/nginx/conf.d:
-    bind: $SNAP_DATA/etc/nginx/conf.d
-  /etc/nginx/fastcgi.conf:
-    bind-file: $SNAP/etc/nginx/fastcgi.conf
-  /etc/nginx/fastcgi_params:
-    bind-file: $SNAP/etc/nginx/fastcgi_params
-  /etc/nginx/koi-utf:
-    bind-file: $SNAP/etc/nginx/koi-utf
-  /etc/nginx/koi-win:
-    bind-file: $SNAP/etc/nginx/koi-win
-  /etc/nginx/mime.types:
-    bind-file: $SNAP_DATA/etc/nginx/mime.types
-  /etc/nginx/modules-enabled:
-    bind-file: $SNAP_DATA/etc/nginx/modules-enabled
-  /etc/nginx/nginx.conf:
-    bind-file: $SNAP/etc/nginx/nginx.conf
-  /etc/nginx/proxy_params:
-    bind-file: $SNAP/etc/nginx/proxy_params
-  /etc/nginx/scgi_params:
-    bind-file: $SNAP/etc/nginx/scgi_params
-  /etc/nginx/sites-enabled:
-    bind: $SNAP_DATA/etc/nginx/sites-enabled
-  /etc/nginx/snippets:
-    bind: $SNAP/etc/nginx/snippets
-  /etc/nginx/uwsgi_params:
-    bind-file: $SNAP/etc/nginx/uwsgi_params
-  /etc/nginx/win-utf:
-    bind-file: $SNAP/etc/nginx/win-utf
-  /etc/nginx/.certbot.lock:
-    bind-file: $SNAP_DATA/etc/nginx/.certbot.lock
 
 parts:
   nginx:
@@ -93,17 +57,16 @@ parts:
       - certbot
     override-prime: |
       snapcraftctl prime
-
-      sed -i "1s#^#env LD_PRELOAD;\n#" ${SNAPCRAFT_PRIME}/etc/nginx/nginx.conf
-      sed -i 's#user.*;#user root;#' ${SNAPCRAFT_PRIME}/etc/nginx/nginx.conf
-      sed -i 's#pid.*;#pid /tmp/nginx.pid;#' ${SNAPCRAFT_PRIME}/etc/nginx/nginx.conf
+      sed -i "1s#^#env LD_PRELOAD;\n#" ${SNAPCRAFT_PRIME}/config/nginx/nginx.conf
+      sed -i 's#user.*;#user root;#' ${SNAPCRAFT_PRIME}/config/nginx/nginx.conf
+      sed -i 's#pid.*;#pid /tmp/nginx.pid;#' ${SNAPCRAFT_PRIME}/config/nginx/nginx.conf
     filesets:
       exclude-conf-folders:
-        - -etc/nginx/sites-enabled
-        - -etc/nginx/conf.d
         - -var/www
         - -var/log
         - -var/lib
+    organize:
+      etc/nginx: config/nginx
     stage:
       - $exclude-conf-folders
   hooks:
