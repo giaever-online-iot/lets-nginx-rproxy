@@ -1,0 +1,84 @@
+name: lets-nginx-rproxy
+base: core20
+version: '0.1' 
+summary: Proxy to localhost with Nginx and Lets Encrypt
+description: |
+  Simple snap to reverse proxy with Let's encrypt and Nginx.
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: strict # use 'strict' once you have the right plugs and slots
+
+apps:
+  lets-encrypt:
+    environment:
+      PYTHONPATH: $SNAP/lib/python3.8/site-packages
+    command: bin/certbot
+    plugs:
+      - network
+      - network-bind
+  nginx:
+    environment:
+      LD_PRELOAD: $SNAP/usr/lib/nginx/ld-preload.so
+    command: usr/sbin/nginx
+    plugs:
+      - network
+      - network-bind
+  nginx-daemon:
+    environment:
+      LD_PRELOAD: $SNAP/usr/lib/nginx/ld-preload.so
+    command: usr/sbin/nginx
+    daemon: forking
+    plugs:
+      - network
+      - network-bind
+
+layout:
+  /etc/letsencrypt:
+    bind: $SNAP_DATA/etc/letsencrypt
+  /etc/nginx:
+    bind: $SNAP_DATA/etc/nginx
+  /var/log/nginx:
+    bind: $SNAP_DATA/var/log/nginx
+  /var/log/letsencrypt:
+    bind: $SNAP_DATA/var/log/letsencrypt
+  /var/lib/letsencrypt:
+    bind: $SNAP_DATA/var/lib/letsencrypt
+  /var/lib/nginx:
+    bind: $SNAP_DATA/var/lib/nginx
+  /var/www:
+    bind: $SNAP_DATA/var/www
+
+parts:
+  nginx:
+    plugin: nil
+    stage-packages:
+      - nginx
+    stage-snaps:
+      - certbot
+    override-prime: |
+      snapcraftctl prime
+      sed -i "1s#^#env LD_PRELOAD;\n#" ${SNAPCRAFT_PRIME}/config/nginx/nginx.conf
+      sed -i 's#user.*;#user root;#' ${SNAPCRAFT_PRIME}/config/nginx/nginx.conf
+      sed -i 's#pid.*;#pid /tmp/nginx.pid;#' ${SNAPCRAFT_PRIME}/config/nginx/nginx.conf
+    filesets:
+      exclude-conf-folders:
+        - -var/www
+        - -var/log
+        - -var/lib
+    organize:
+      etc/nginx: config/nginx
+    stage:
+      - $exclude-conf-folders
+  hooks:
+    plugin: dump
+    source: source/hooks
+    organize:
+      '*': snap/hooks/
+  ld-preload:
+    plugin: nil
+    source: source/nginx
+    build-packages:
+      - gcc
+    override-build: |
+      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/lib/nginx
+      gcc -fPIC -shared -o $SNAPCRAFT_PART_INSTALL/usr/lib/nginx/ld-preload.so $SNAPCRAFT_PART_BUILD/ld-preload.c -ldl

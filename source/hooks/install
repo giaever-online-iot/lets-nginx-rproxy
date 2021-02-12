@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -ex
+
+cp -rf $SNAP/config/nginx/* $SNAP_DATA/etc/nginx
+
+logger "$(ls -al $SNAP_DATA/etc/nginx)"
+
+ln -s $SNAP_DATA/etc/nginx/sites-available/default \
+    $SNAP_DATA/etc/nginx/sites-enabled
+
+exit 0
