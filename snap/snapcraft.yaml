@@ -64,6 +64,8 @@ parts:
     plugin: nil
     stage-packages:
       - nginx
+      - libaugeas0
+      - 1augeas-lenses
     stage-snaps:
       - certbot
     override-prime: |
