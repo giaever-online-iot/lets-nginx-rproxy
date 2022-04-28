@@ -12,6 +12,7 @@ apps:
   lets-encrypt:
     environment:
       PYTHONPATH: $SNAP/lib/python3.8/site-packages
+      AUGEAS_LENS_LIB: "$SNAP/usr/share/augeas/lenses/dist"
     command: bin/certbot
     plugs:
       - network
@@ -19,6 +20,7 @@ apps:
   lets-encrypt-deamon:
     environment:
       PYTHONPATH: $SNAP/lib/python3.8/site-packages
+      AUGEAS_LENS_LIB: "$SNAP/usr/share/augeas/lenses/dist"
     command: bin/certbot -q renew
     daemon: oneshot
     timer: 00:00~24:00/2
