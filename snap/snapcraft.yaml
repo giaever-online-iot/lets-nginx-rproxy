@@ -16,6 +16,15 @@ apps:
     plugs:
       - network
       - network-bind
+  lets-encrypt-deamon:
+    environment:
+      PYTHONPATH: $SNAP/lib/python3.8/site-packages
+    command: bin/certbot -q renew
+    daemon: oneshot
+    timer: 00:00~24:00/2
+    plugs:
+      - network
+      - network-bind
   nginx:
     environment:
       LD_PRELOAD: $SNAP/usr/lib/nginx/ld-preload.so
