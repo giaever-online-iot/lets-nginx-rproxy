@@ -45,19 +45,19 @@ apps:
 
 layout:
   /etc/letsencrypt:
-    bind: $SNAP_DATA/etc/letsencrypt
+    bind: $SNAP_DATA/letsencrypt
   /etc/nginx:
-    bind: $SNAP_DATA/etc/nginx
+    bind: $SNAP_DATA/nginx
   /var/log/nginx:
-    bind: $SNAP_DATA/var/log/nginx
+    bind: $SNAP_COMMON/log/nginx
   /var/log/letsencrypt:
-    bind: $SNAP_DATA/var/log/letsencrypt
+    bind: $SNAP_COMMON/log/letsencrypt
   /var/lib/letsencrypt:
-    bind: $SNAP_DATA/var/lib/letsencrypt
+    bind: $SNAP/lib/letsencrypt
   /var/lib/nginx:
-    bind: $SNAP_DATA/var/lib/nginx
+    bind: $SNAP/lib/nginx
   /var/www:
-    bind: $SNAP_DATA/var/www
+    bind: $SNAP_DATA/www
 
 parts:
   nginx:
